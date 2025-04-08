@@ -1,3 +1,13 @@
+mod schema;
+
+use dotenv::dotenv;
+use std::env;
+
 fn main() {
-    println!("Hello, world!");
+    dotenv().ok();
+
+    let database_url = env::var("DATABASE_URL")
+        .expect("DATABASE_URL doit être définie");
+
+    // Utilisez database_url pour la connexion à la base de données
 }
