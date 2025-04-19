@@ -23,7 +23,7 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Copier le binaire compilé depuis l'étape de construction
-COPY --from=builder /app/target/release/api .
+COPY --from=builder /app/target/release/HappytoBeesbackend ./api
 
 # Exposer le port utilisé par l'API
 EXPOSE 3000
