@@ -1,4 +1,4 @@
-use actix_web::{web, App, HttpServer, middleware::Logger};
+use actix_web::{web, get, App, HttpResponse, HttpServer, middleware::Logger};
 use dotenv::dotenv;
 use std::{env, io::Write};
 use log::{info, error};
