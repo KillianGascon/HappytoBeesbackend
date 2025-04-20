@@ -10,18 +10,27 @@ COPY . .
 # Installer les dépendances et compiler en mode release
 RUN cargo build --release
 
-# Étape 2 : Image finale minimale avec Alpine Linux
-FROM alpine:latest
+# Étape 2 : Image finale minimale
+FROM debian:buster-slim
 
-# Installer GLIBC et PostgreSQL client
-RUN apk add --no-cache \
-    libc6-compat libpq \
-    && apk del gcompat alpine-baselayout-data \
-    && wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
-    && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.34-r0/glibc-2.34-r0.apk \
-    && apk add --allow-untrusted ./glibc-2.34-r0.apk \
-    && rm -f glibc-2.34-r0.apk
+# Installer PostgreSQL client et autres dépendances nécessaires
+RUN apt-get update && \
+    apt-get install -y wget build-essential libpq-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
+# Installer GLIBC 2.34
+RUN wget http://ftp.gnu.org/gnu/libc/glibc-2.34.tar.gz && \
+    tar -xvzf glibc-2.34.tar.gz && \
+    cd glibc-2.34 && \
+    mkdir build && cd build && \
+    ../configure --prefix=/opt/glibc-2.34 && \
+    make -j$(nproc) && \
+    make install && \
+    cd / && rm -rf glibc-2.34 glibc-2.34.tar.gz
+
+# Configurer le chemin pour utiliser la version GLIBC installée
+ENV LD_LIBRARY_PATH=/opt/glibc-2.34/lib:$LD_LIBRARY_PATH
 
 # Définir le répertoire de travail
 WORKDIR /app
@@ -34,3 +43,4 @@ EXPOSE 3000
 
 # Commande pour démarrer l'application
 CMD ["./api"]
+
