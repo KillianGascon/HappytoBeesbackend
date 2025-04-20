@@ -11,11 +11,12 @@ COPY . .
 RUN cargo build --release
 
 # Étape 2 : Image finale minimale
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 # Installer uniquement les dépendances nécessaires pour PostgreSQL
 RUN apt-get update && \
     apt-get install -y libpq5 && \
+    apt-get install -y libc6 &&\
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
