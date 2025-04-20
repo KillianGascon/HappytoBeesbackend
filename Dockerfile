@@ -10,14 +10,16 @@ COPY . .
 # Installer les dépendances et compiler en mode release
 RUN cargo build --release
 
-# Étape 2 : Image finale minimale
-FROM debian:buster-slim
+# Étape 2 : Image finale minimale avec Alpine Linux
+FROM alpine:latest
 
-# Installer PostgreSQL client
-RUN apt-get update && \
-    apt-get install -y libpq-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Installer GLIBC et PostgreSQL client
+RUN apk add --no-cache \
+    libc6-compat libpq \
+    && wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
+    && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.34-r0/glibc-2.34-r0.apk \
+    && apk add --no-cache ./glibc-2.34-r0.apk \
+    && rm -f glibc-2.34-r0.apk
 
 # Définir le répertoire de travail
 WORKDIR /app
