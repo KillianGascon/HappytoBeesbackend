@@ -1,34 +1,34 @@
-# Étape 1 : Construction de l'application
-FROM rust:latest AS builder
+ARG RUST_VERSION=1.80.0
 
-# Définir le répertoire de travail
+FROM rust:${RUST_VERSION} as builder-rust
 WORKDIR /app
+COPY .env ./.env
+RUN --mount=type=bind,source=api,target=api,rw \
+    --mount=type=cache,target=/app/target/,rw \
+    --mount=type=cache,target=/usr/local/cargo/registry/,rw \
+    <<EOF
+set -e
+cd api || exit 1
+cargo build --locked --release
+cp ./target/release/api /
+cd .. || exit 1
+EOF
 
-# Copier les fichiers nécessaires
-COPY . .
+FROM debian:12
+ARG UID=10001
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    appuser
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+USER appuser
+COPY --from=builder-rust /api /
 
-# Installer les dépendances et compiler en mode release
-RUN cargo build --release
-
-# Étape 2 : Image finale minimale
-FROM debian:bullseye-slim
-
-# Installer les dépendances nécessaires
-RUN apt-get update && \
-    apt-get install -y \
-    libpq5 \
-    ca-certificates \
-    && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Définir le répertoire de travail
-WORKDIR /app
-
-# Copier le binaire compilé depuis l'étape de construction
-COPY --from=builder /app/target/release/HappytoBeesbackend ./api
-
-# Exposer le port utilisé par l'API
-EXPOSE 8080
-
-# Commande pour démarrer l'application
-CMD ["./api"]
+# Commande pour lancer l'api
+CMD /api
