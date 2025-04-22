@@ -10,7 +10,7 @@ RUN --mount=type=bind,source=api,target=api,rw \
 set -e
 cd api || exit 1
 cargo build --locked --release
-cp ./target/release/api /
+cp ./target/release/HappytoBeesbackend /
 cd .. || exit 1
 EOF
 
@@ -28,7 +28,7 @@ RUN apt-get update -y \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 USER appuser
-COPY --from=builder-rust /api /
+COPY --from=builder-rust /HappytoBeesbackend /
 
 # Commande pour lancer l'api
-CMD /api
+CMD /HappytoBeesbackend
