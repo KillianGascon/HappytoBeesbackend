@@ -24,11 +24,32 @@ pub fn get_utilisateur_by_id(conn: &mut DbConnection, id: i32) -> Result<Utilisa
 }
 
 /// Crée un nouvel utilisateur
-pub fn create_utilisateur(conn: &mut DbConnection, new_utilisateur: NewUtilisateur) -> Result<Utilisateur, Error> {
+pub fn create_utilisateur(
+    conn: &mut DbConnection,
+    mut new_utilisateur: NewUtilisateur,
+) -> Result<Utilisateur, Error> {
+    // Vérification et hachage du mot de passe
+    if let Some(password) = &new_utilisateur.mot_de_passe {
+        match hash_password(password) {
+            Ok(hashed_password) => {
+                new_utilisateur.mot_de_passe = Some(hashed_password);
+            }
+            Err(e) => {
+                log::error!("Erreur lors du hachage du mot de passe : {}", e);
+                return Err(diesel::result::Error::RollbackTransaction);
+            }
+        }
+    } else {
+        log::error!("Mot de passe manquant pour l'utilisateur.");
+        return Err(diesel::result::Error::RollbackTransaction);
+    }
+
+    // Insertion dans la base de données
     diesel::insert_into(utilisateur::table)
         .values(&new_utilisateur)
         .get_result(conn)
 }
+
 
 /// Met à jour un utilisateur existant
 pub fn update_utilisateur(conn: &mut DbConnection, id: i32, updated_utilisateur: UpdateUtilisateur) -> Result<Utilisateur, Error> {
