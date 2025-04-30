@@ -3,7 +3,6 @@ use crate::models::ruche_models::{Ruche, NewRuche, UpdateRuche};
 use crate::schema::ruche;
 use diesel::prelude::*;
 use diesel::result::Error;
-use crate::schema::utilisateur::dsl::utilisateur;
 
 /// Récupère toutes les ruches
 pub fn get_all_ruches(conn: &mut DbConnection) -> Result<Vec<Ruche>, Error> {
