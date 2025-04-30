@@ -85,6 +85,7 @@ async fn main() -> std::io::Result<()> {
                 // Routes de ruche
                 .service(controllers::ruche_controller::get_all_ruches)
                 .service(controllers::ruche_controller::get_ruche_by_id)
+                .service(controllers::ruche_controller::get_ruches_by_utilisateur)
                 .service(controllers::ruche_controller::create_ruche)
                 .service(controllers::ruche_controller::update_ruche)
                 .service(controllers::ruche_controller::delete_ruche)

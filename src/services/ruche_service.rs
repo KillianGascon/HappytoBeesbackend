@@ -3,6 +3,7 @@ use crate::models::ruche_models::{Ruche, NewRuche, UpdateRuche};
 use crate::schema::ruche;
 use diesel::prelude::*;
 use diesel::result::Error;
+use crate::schema::utilisateur::dsl::utilisateur;
 
 /// Récupère toutes les ruches
 pub fn get_all_ruches(conn: &mut DbConnection) -> Result<Vec<Ruche>, Error> {
@@ -12,6 +13,15 @@ pub fn get_all_ruches(conn: &mut DbConnection) -> Result<Vec<Ruche>, Error> {
 /// Récupère une ruche par son ID
 pub fn get_ruche_by_id(conn: &mut DbConnection, id: i32) -> Result<Ruche, Error> {
     ruche::table.find(id).first::<Ruche>(conn)
+}
+
+/// Récupère toutes les ruches associées à un utilisateur spécifique
+pub fn get_ruches_by_utilisateur(conn: &mut DbConnection, utilisateur_id_val: i32) -> Result<Vec<Ruche>, Error> {
+    use crate::schema::ruche::dsl::*;
+
+    ruche
+        .filter(id_apiculteur.eq(utilisateur_id_val))
+        .load::<Ruche>(conn)
 }
 
 /// Crée une nouvelle ruche
