@@ -79,6 +79,41 @@ pub async fn get_ruche_by_id(pool: web::Data<Pool>, id: web::Path<i32>) -> Resul
     }
 }
 
+// Méthode pour récupérer les ruches d'un utilisateur spécifique
+#[get("/ruches/getByUtilisateur/{id}")]
+pub async fn get_ruches_by_utilisateur(pool: web::Data<Pool>, id: web::Path<i32>, ) -> Result<HttpResponse> {
+    let mut conn = match get_connection(&pool) {
+        Ok(conn) => conn,
+        Err(e) => return Ok(e),
+    };
+
+    let result = match web::block(move || {
+        ruche_service::get_ruches_by_utilisateur(&mut conn, id.into_inner())
+    })
+        .await
+    {
+        Ok(result) => result,
+        Err(e) => {
+            error!("Erreur lors de l'exécution de la requête: {}", e);
+            return Ok(HttpResponse::InternalServerError().json(format!(
+                "Erreur de serveur: {}",
+                e
+            )));
+        }
+    };
+
+    match result {
+        Ok(ruches) => Ok(HttpResponse::Ok().json(ruches)),
+        Err(e) => {
+            error!("Erreur de base de données: {}", e);
+            Ok(HttpResponse::InternalServerError().json(format!(
+                "Erreur de base de données: {}",
+                e
+            )))
+        }
+    }
+}
+
 #[post("/ruches")]
 pub async fn create_ruche(pool: web::Data<Pool>, new_ruche: web::Json<NewRuche>) -> Result<HttpResponse> {
     let mut conn = match get_connection(&pool) {

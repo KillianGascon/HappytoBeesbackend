@@ -14,6 +14,15 @@ pub fn get_ruche_by_id(conn: &mut DbConnection, id: i32) -> Result<Ruche, Error>
     ruche::table.find(id).first::<Ruche>(conn)
 }
 
+/// Récupère toutes les ruches associées à un utilisateur spécifique
+pub fn get_ruches_by_utilisateur(conn: &mut DbConnection, utilisateur_id_val: i32) -> Result<Vec<Ruche>, Error> {
+    use crate::schema::ruche::dsl::*;
+
+    ruche
+        .filter(id_apiculteur.eq(utilisateur_id_val))
+        .load::<Ruche>(conn)
+}
+
 /// Crée une nouvelle ruche
 pub fn create_ruche(conn: &mut DbConnection, new_ruche: NewRuche) -> Result<Ruche, Error> {
     diesel::insert_into(ruche::table)
